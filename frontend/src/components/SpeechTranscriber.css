@@ -1,0 +1,22 @@
+.speech-container {
+  background: #1f2937;
+  padding: 20px;
+  border-radius: 12px;
+  color: white;
+}
+
+.speech-title {
+  margin-bottom: 10px;
+}
+
+.speech-status {
+  opacity: 0.7;
+  margin-bottom: 10px;
+}
+
+.speech-box {
+  background: #374151;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}

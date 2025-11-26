@@ -1,0 +1,48 @@
+.emotion-index-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  
+  width: 100%;
+  background: #0f172a;
+  padding: 12px 20px;
+  border-radius: 10px;
+  box-sizing: border-box;
+  gap: 14px;
+}
+
+/* Each emotion item horizontally aligned */
+.emotion-item {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  transition: 0.3s ease;
+}
+
+/* Color square */
+.emotion-color-box {
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  border: 1px solid rgba(255,255,255,0.25);
+}
+
+/* Emotion name text */
+.emotion-name {
+  color: #e2e8f0;
+  font-size: 14px;
+  letter-spacing: 0.3px;
+}
+
+/* Glow highlight for average emotion */
+.emotion-item.active .emotion-color-box {
+  box-shadow: 0px 0px 10px 3px rgba(255,255,255,0.6);
+  transform: scale(1.1);
+}
+
+.emotion-item.active .emotion-name {
+  font-weight: 600;
+  color: #ffffff;
+}

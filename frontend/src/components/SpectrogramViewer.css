@@ -1,0 +1,75 @@
+/* Container */
+.spectro-container {
+  width: 100%;
+  margin-top: 20px;
+  padding: 16px;
+  background: #020617;
+  border-radius: 12px;
+  border: 1px solid #333;
+  color: #fff;
+}
+
+.spectro-title {
+  margin-bottom: 12px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.spectro-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+.spectro-status {
+  padding: 10px;
+  background: #020617;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+
+/* Placeholder message box */
+.spectro-placeholder {
+  padding: 16px;
+  text-align: center;
+  font-size: 14px;
+  color: #aaa;
+  border: 1px dashed #555;
+  border-radius: 10px;
+  height: 200px;              /* MATCHES 2-inch figure height */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+/* Scrollable container for wide images */
+.spectro-image-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  background: #000;
+  border-radius: 8px;
+  padding: 6px;
+}
+
+
+/* Actual spectrogram image */
+.spectro-image {
+  width: 600px;              /* MATCH figure width: 6 inches x 100 DPI */
+  height: 200px;             /* MATCH figure height: 2 inches x 100 DPI */
+  object-fit: contain;
+  display: block;
+  border-radius: 6px;
+}
+  
+/* Session info */
+.spectro-session {
+  margin-top: 10px;
+  font-size: 12px;
+  opacity: 0.5;
+}

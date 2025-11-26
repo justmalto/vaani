@@ -1,0 +1,60 @@
+/* FULL SCREEN GRID LAYOUT */
+.app-container {
+  display: grid;
+  height: 100vh;       /* FULL HEIGHT */
+  width: 100vw;        /* FULL WIDTH */
+  overflow: hidden;    /* prevent page scroll */
+  background: #020617; /* nice dark navy */
+
+  grid-template-columns: 65% 35%;   /* 2 columns */
+  grid-template-rows: 100%;         /* 1 full row */
+}
+
+/* Left visualizer panel */
+.left-panel {
+  display: grid;
+  grid-template-rows: 5% 10% 30% 55%;
+  align-items: center;
+  justify-content: center;
+  overflow-y: scroll;
+  width: 100%;      /* controlled by grid */
+}
+
+/* Right side card panel */
+.right-panel {
+  display: grid;
+  grid-template-rows: 50% 50%;
+  width: 100%;        /* controlled by grid */
+  height: 100%;
+  background: #0f172a;
+  overflow-y: scroll;    /* only right panel scrolls */
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.ChatR {
+  padding-top: 10px;
+}
+
+.SpeechT {
+  padding-bottom: 10px;
+  height: 20%;
+  width: 100%;
+}
+
+.VC {
+  width: 100%;
+}
+
+.right-panel::-webkit-scrollbar,
+.left-panel::-webkit-scrollbar {
+  display: none; /* Chrome */
+}
+
+.HeadingFont{
+  font-family:Arial, Helvetica, sans-serif ;
+  font-style: normal;
+  font-size: larger;
+  font-weight: 300;
+  padding-top: 1%;
+}

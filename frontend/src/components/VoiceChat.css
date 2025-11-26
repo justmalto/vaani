@@ -1,0 +1,72 @@
+/* Full-width top section */
+.audio-visualizer-container {
+  width: 100%;
+  height: auto;
+  background: #06063C;
+  padding-top: 40px;
+  padding-bottom: 60px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+
+  overflow: hidden;
+}
+.voicechat-screen{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  width: 100%;
+}
+/* Canvas */
+.visualizer-canvas {
+  width: 100%;
+  max-width: 1000px;
+  height: 260px;
+  display: block;
+}
+
+/* Base mic dot */
+.mic-dot {
+
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  margin-top: 25px;
+  cursor: pointer;
+  transition: 0.25s ease;
+}
+
+/* 🔴 Mic Off (no active + no connecting) */
+.mic-dot:not(.active):not(.connecting) {
+  background: #B31313;
+}
+
+/* 🟡 Connecting (blinking) */
+.mic-dot.connecting {
+  background: #E6C72F;
+  animation: blink 1s infinite;
+}
+
+/* 🟢 Active (pulsing) */
+.mic-dot.active:not(.connecting) {
+  background: #21C55D;
+  animation: pulse 0.8s infinite;
+}
+
+/* Simple blinking */
+@keyframes blink {
+  0%   { opacity: 0.6; }
+  50%  { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+
+/* Soft pulse */
+@keyframes pulse {
+  0%   { transform: scale(1); opacity: 1; }
+  50%  { transform: scale(1.25); opacity: 0.6; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
