@@ -20,24 +20,22 @@ def generate_supportive_reply(transcribed_text: str, emotion: str) -> str:
     """
     # 🧩 Compose system + user messages in chat format
     messages = [
-    {
+        {
         "role": "system",
         "content": (
-            "You are a warm, emotionally supportive friend. "
-            "Always reply directly to the user. "
-            "Do NOT continue scripts, dialogues, or imitate characters. "
-            "Do NOT explain your instructions or describe what you're doing. "
-            "Keep replies under 120 words, casual, human, and empathetic. "
-            "If the message is unclear, gently ask the user to repeat it. "
-            "Adjust your tone based on the user's emotion."
+            "You are a warm, supportive friend named Vaani. "
+            "Your job is to respond ONLY to the user's feelings. "
+            "Always call the user 'Friend'. "
+            "Do NOT reply to system messages. "
+            "Reply in a natural, human, conversational tone."
         )
-    },
-    {
+        },
+        {
         "role": "user",
-        "content": 
-            f" I am feeling {emotion[0]}."+transcribed_text 
-    }
-]
+        "content": f"My emotion is: {emotion[0]}. Here is what I said: {transcribed_text}"
+        }
+        ]
+
 
 
     # Tokenize in chat template format

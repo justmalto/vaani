@@ -1,10 +1,11 @@
-import { createContext, useContext, useEffect, useRef, useState } from "react";
+ import { createContext, useContext, useEffect, useRef, useState } from "react";
 
 const PipelineContext = createContext(null);
 
 export function PipelineProvider({ children }) {
   const wsRef = useRef(null);
   const reconnectTimer = useRef(null);
+  const isClosingRef = useRef(false);
 
   const [isConnected, setIsConnected] = useState(false);
   const [sessionId, setSessionId] = useState(null);
@@ -13,44 +14,55 @@ export function PipelineProvider({ children }) {
   const [reply, setReply] = useState("");
   const [stage, setStage] = useState("idle");
 
-  // NEW: spectrograms from backend
   const [spectrogramRaw, setSpectrogramRaw] = useState(null);
   const [spectrogramEmotion, setSpectrogramEmotion] = useState(null);
 
   const connectWS = () => {
-    const ws = new WebSocket("ws://127.0.0.1:8000/ws/pipeline");
+    // -----------------------------
+    // PREVENT MULTIPLE WS INSTANCES
+    // -----------------------------
+    if (
+      wsRef.current &&
+      wsRef.current.readyState !== WebSocket.CLOSED &&
+      wsRef.current.readyState !== WebSocket.CLOSING
+    ) {
+      console.log("WS already open → skipping new connection");
+      return;
+    }
+
+    const ws = new WebSocket("wss://vaani-backend.whiteriver-ff52acfc.centralindia.azurecontainerapps.io/ws/pipeline");
     wsRef.current = ws;
+    isClosingRef.current = false;
 
     ws.onopen = () => {
       setIsConnected(true);
-      clearTimeout(reconnectTimer.current);
       console.log("Pipeline WS OPEN");
+      if (reconnectTimer.current) clearTimeout(reconnectTimer.current);
     };
 
     ws.onclose = () => {
       setIsConnected(false);
-      reconnectTimer.current = setTimeout(connectWS, 1500);
       console.log("Pipeline WS CLOSED");
+
+      if (!isClosingRef.current) {
+        reconnectTimer.current = setTimeout(connectWS, 1500);
+      }
     };
 
-    ws.onerror = () => ws.close();
+    ws.onerror = () => {
+      console.log("Pipeline WS ERROR → closing");
+      ws.close();
+    };
 
-    // -------------------------
-    // HANDLERS FOR WS MESSAGES
-    // -------------------------
     const handlers = {
       session_id: (msg) => {
         setSessionId(msg.session_id);
-
-        // reset spectrograms for new session
         setSpectrogramRaw(null);
         setSpectrogramEmotion(null);
       },
 
       ready: () => setStage("ready"),
-
       status: (msg) => setStage(msg.stage),
-
       transcript: (msg) => setTranscript(msg.text),
 
       emotion: (msg) => {
@@ -60,20 +72,10 @@ export function PipelineProvider({ children }) {
 
       reply: (msg) => setReply(msg.text),
 
-      // NEW: raw spectrogram base64 from processor loop
-      spectrogram_raw: (msg) => {
-        setSpectrogramRaw(msg.image);
-      },
-
-      // NEW: emotion spectrogram base64
-      spectrogram_emotion: (msg) => {
-        setSpectrogramEmotion(msg.image);
-      },
+      spectrogram_raw: (msg) => setSpectrogramRaw(msg.image),
+      spectrogram_emotion: (msg) => setSpectrogramEmotion(msg.image),
     };
 
-    // -------------------------
-    // MESSAGE ROUTER
-    // -------------------------
     ws.onmessage = (event) => {
       if (typeof event.data !== "string") return;
 
@@ -88,9 +90,11 @@ export function PipelineProvider({ children }) {
 
   useEffect(() => {
     connectWS();
+
     return () => {
-      wsRef.current?.close();
-      clearTimeout(reconnectTimer.current);
+      isClosingRef.current = true;
+      if (wsRef.current) wsRef.current.close();
+      if (reconnectTimer.current) clearTimeout(reconnectTimer.current);
     };
   }, []);
 
@@ -103,8 +107,8 @@ export function PipelineProvider({ children }) {
         emotion,
         reply,
         stage,
-        spectrogramRaw,        // NEW
-        spectrogramEmotion,    // NEW
+        spectrogramRaw,
+        spectrogramEmotion,
       }}
     >
       {children}

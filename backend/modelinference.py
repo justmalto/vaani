@@ -1,5 +1,5 @@
 # model_inference.py
-import torch, torchaudio, librosa, numpy as np
+import torch, torchaudio, numpy as np
 from torch import nn
 
 SAMPLE_RATE = 16000
@@ -15,8 +15,8 @@ CLASS_NAMES = [
 ]
 
 # <-- This file must contain ONLY a state_dict -->
-MODEL_PATH = "/home/om/Documents/trials/ser_masked_attn_best.pt"
-
+# MODEL_PATH = "app/model/ser_masked_attn_best.pt"
+MODEL_PATH = "ser_masked_attn_best.pt"
 
 # ============================================================
 #                    FEATURE TRANSFORM
@@ -98,7 +98,7 @@ def load_model():
         model = CNNLSTM_MaskedAttn(N_MELS, len(CLASS_NAMES))
 
         # Load state_dict only (NOT full pickle model)
-        state_dict = torch.load(MODEL_PATH, map_location=device)
+        state_dict = torch.load(MODEL_PATH, map_location=device, weights_only=False)
         model.load_state_dict(state_dict)
 
         model.to(device).eval()
@@ -207,23 +207,96 @@ def preprocess_audio_segment(y, transform):
 #         CLASS_NAMES[pred_idx]
 #     ]
 
+# def predict_emotion_from_wav(wav_path, window_sec=5.0, hop_sec=2.0):
+#     model = load_model()
+#     transform = ToMelLogCMVN()
+
+#     y, sr = librosa.load(wav_path, sr=SAMPLE_RATE)
+
+#     win_len = int(sr * window_sec)
+#     hop_len = int(sr * hop_sec)
+#     probs_all = []
+
+#     # NEW: we will store window objects here
+#     windows = []
+
+#     print("\n===== DEBUG: Processing Windows =====")
+
+#     for start in range(0, len(y) - win_len + 1, hop_len):
+#         seg = y[start:start + win_len]
+#         feat, mask = preprocess_audio_segment(seg, transform)
+#         feat, mask = feat.to(device), mask.to(device)
+
+#         with torch.no_grad():
+#             logits = model(feat, mask)
+#             probs = torch.softmax(logits, dim=1).cpu().numpy().flatten()
+
+#         # Debug print
+#         print(f"Window {start/sr:.2f}–{(start+win_len)/sr:.2f}s:")
+#         for cls, val in zip(CLASS_NAMES, probs):
+#             print(f"   {cls:>18}: {val:.4f}")
+
+#         probs_all.append(probs)
+
+#         # ▶ NEW: Build window object
+#         window_emotion = CLASS_NAMES[np.argmax(probs)]
+#         windows.append({
+#             "start": start / sr,
+#             "end": (start + win_len) / sr,
+#             "emotion": window_emotion,
+#             "probs": {cls: float(v) for cls, v in zip(CLASS_NAMES, probs)}
+#         })
+
+#     # Handle no windows
+#     if not probs_all:
+#         print("\n[DEBUG] No windows processed → Audio too short.")
+#         return None
+
+#     # Average for final emotion
+#     print("\n===== DEBUG: Averaged Result =====")
+#     probs_all = np.stack(probs_all)
+#     mean_probs = probs_all.mean(axis=0)
+#     pred_idx = mean_probs.argmax()
+
+#     for cls, val in zip(CLASS_NAMES, mean_probs):
+#         print(f"   {cls:>18}: {val:.4f}")
+
+#     print(f"\nFinal Predicted Emotion: {CLASS_NAMES[pred_idx]}\n")
+
+#     # 🔥 EXACT RETURN FORMAT REQUIRED
+#     return [
+#         CLASS_NAMES[pred_idx],  # backend STILL uses this
+#         windows                 # NEW (used by emotion spectrogram)
+#     ]
+
+import torchaudio
+import torch
+import numpy as np
+
 def predict_emotion_from_wav(wav_path, window_sec=5.0, hop_sec=2.0):
     model = load_model()
     transform = ToMelLogCMVN()
 
-    y, sr = librosa.load(wav_path, sr=SAMPLE_RATE)
+    # ---- LOAD AUDIO WITHOUT LIBROSA ----
+    y, sr = torchaudio.load(wav_path)  # y: (channels, samples)
+    y = y.mean(dim=0)                  # convert to mono
+    if sr != SAMPLE_RATE:
+        y = torchaudio.functional.resample(y, sr, SAMPLE_RATE)
+        sr = SAMPLE_RATE
+
+    y = y.numpy()
 
     win_len = int(sr * window_sec)
     hop_len = int(sr * hop_sec)
     probs_all = []
 
-    # NEW: we will store window objects here
     windows = []
 
     print("\n===== DEBUG: Processing Windows =====")
 
     for start in range(0, len(y) - win_len + 1, hop_len):
         seg = y[start:start + win_len]
+
         feat, mask = preprocess_audio_segment(seg, transform)
         feat, mask = feat.to(device), mask.to(device)
 
@@ -238,7 +311,6 @@ def predict_emotion_from_wav(wav_path, window_sec=5.0, hop_sec=2.0):
 
         probs_all.append(probs)
 
-        # ▶ NEW: Build window object
         window_emotion = CLASS_NAMES[np.argmax(probs)]
         windows.append({
             "start": start / sr,
@@ -247,12 +319,10 @@ def predict_emotion_from_wav(wav_path, window_sec=5.0, hop_sec=2.0):
             "probs": {cls: float(v) for cls, v in zip(CLASS_NAMES, probs)}
         })
 
-    # Handle no windows
     if not probs_all:
-        print("\n[DEBUG] No windows processed → Audio too short.")
+        print("[DEBUG] No windows processed → Audio too short.")
         return None
 
-    # Average for final emotion
     print("\n===== DEBUG: Averaged Result =====")
     probs_all = np.stack(probs_all)
     mean_probs = probs_all.mean(axis=0)
@@ -263,8 +333,7 @@ def predict_emotion_from_wav(wav_path, window_sec=5.0, hop_sec=2.0):
 
     print(f"\nFinal Predicted Emotion: {CLASS_NAMES[pred_idx]}\n")
 
-    # 🔥 EXACT RETURN FORMAT REQUIRED
     return [
-        CLASS_NAMES[pred_idx],  # backend STILL uses this
-        windows                 # NEW (used by emotion spectrogram)
+        CLASS_NAMES[pred_idx],
+        windows
     ]

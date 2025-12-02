@@ -29,7 +29,7 @@ export default function VoiceChat() {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
       // 2. Start WebSocket FIRST (fix)
-      const ws = new WebSocket("ws://127.0.0.1:8000/ws/audio");
+      const ws = new WebSocket("wss://vaani-backend.whiteriver-ff52acfc.centralindia.azurecontainerapps.io/ws/audio");
       websocketRef.current = ws;
 
       ws.onopen = () => {
